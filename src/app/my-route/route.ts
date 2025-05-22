@@ -10,7 +10,5 @@ export const GET = async () => {
     collection: 'categories',
   })
   
-
-
   return Response.json(data)
 }
