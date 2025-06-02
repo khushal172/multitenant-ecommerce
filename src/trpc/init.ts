@@ -1,3 +1,4 @@
+import superjson from "superjson";
 import {initTRPC} from '@trpc/server';
 import config from '@payload-config'
 import { getPayload } from 'payload';
@@ -10,6 +11,8 @@ export const createTRPCContext = cache(async () => {
 
 const t = initTRPC.create({
     // @see https://trpc.io//docs/server/data-transformers
+
+    transformer: superjson,
 })
 
 export const createTRPCRouter = t.router;
