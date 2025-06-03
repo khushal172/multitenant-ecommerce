@@ -1,2 +1,2 @@
-export const AUTH_COOKIE = "legion-payload-token";
+export const AUTH_COOKIE = "payload-token";
 
