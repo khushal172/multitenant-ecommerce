@@ -1,5 +1,5 @@
-import { getPayload } from "payload"
-import config from "@payload-config"
+import { getPayload } from "payload";
+import config from "@payload-config";
 
 const categories = [
   {
@@ -135,40 +135,49 @@ const categories = [
       { name: "Macro", slug: "macro" },
     ],
   },
-]
+];
 
 const seed = async () => {
-    const payload = await getPayload({config});
+  const payload = await getPayload({ config });
+  // Create Admin user
+  await payload.create({
+    collection: "users",
+    data: {
+      email: "admin@admin.com",
+      password: "admin",
+      roles: ["super-admin"],
+      username: "admin",
+    },
+  });
+  for (const category of categories) {
+    const parentCategory = await payload.create({
+      collection: "categories",
+      data: {
+        name: category.name,
+        slug: category.slug,
+        color: category.color,
+        parent: null,
+      },
+    });
 
-    for(const category of categories){
-        const parentCategory = await payload.create({
-            collection: "categories",
-            data: {
-                name: category.name,
-                slug: category.slug,
-                color: category.color,
-                parent: null,
-            },
-        });
-
-        for(const subcategory of category.subcategories || []){
-            await payload.create({
-                collection: "categories",
-                data: {
-                    name: subcategory.name,
-                    slug: subcategory.slug,
-                    parent: parentCategory.id,
-                },
-            });
-        }
+    for (const subcategory of category.subcategories || []) {
+      await payload.create({
+        collection: "categories",
+        data: {
+          name: subcategory.name,
+          slug: subcategory.slug,
+          parent: parentCategory.id,
+        },
+      });
     }
-}
+  }
+};
 
-try{
-    await seed();
-    console.log('Seeding completed Successfully');
-    process.exit(0);
-} catch (error){
-    console.error("Error during seeding", error);
-    process.exit(1);
+try {
+  await seed();
+  console.log("Seeding completed Successfully");
+  process.exit(0);
+} catch (error) {
+  console.error("Error during seeding", error);
+  process.exit(1);
 }

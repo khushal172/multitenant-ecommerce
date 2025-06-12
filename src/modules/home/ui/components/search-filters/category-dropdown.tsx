@@ -21,7 +21,6 @@ export const CategoryDropdown = ({
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { getDropdownPosition } = useDropdownPosition(dropdownRef);
 
 
   const onMouseEnter = () => {
@@ -32,7 +31,6 @@ export const CategoryDropdown = ({
 
   const onMouseLeave = () => setIsOpen(false);
 
-  const dropdownPosition = getDropdownPosition();
 
   // TODO: Potentially improve mobile experience
   // const toggleDropDown = () => {
@@ -76,8 +74,6 @@ export const CategoryDropdown = ({
       <SubcategoryMenu
         category = {category}
         isOpen = {isOpen}
-        position = {dropdownPosition}
-
       />
     </div>
   );
