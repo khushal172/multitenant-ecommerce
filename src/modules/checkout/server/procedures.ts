@@ -78,6 +78,11 @@ export const checkoutRouter = createTRPCRouter({
                 equals: input.tenantSlug,
               },
             },
+            {
+              isArchived: {
+                not_equals: true,
+              },
+            },
           ],
         },
       });
@@ -140,24 +145,27 @@ export const checkoutRouter = createTRPCRouter({
         totalAmount * (PLATFORM_FEE_PERCENT / 100)
       );
 
-      const checkout = await stripe.checkout.sessions.create({
-        customer_email: ctx.session.user.email,
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSlug}/checkout?success=true`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSlug}/checkout?cancel=true`,
-        mode: "payment",
-        line_items: lineItems,
-        invoice_creation: {
-          enabled: true,
+      const checkout = await stripe.checkout.sessions.create(
+        {
+          customer_email: ctx.session.user.email,
+          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSlug}/checkout?success=true`,
+          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSlug}/checkout?cancel=true`,
+          mode: "payment",
+          line_items: lineItems,
+          invoice_creation: {
+            enabled: true,
+          },
+          metadata: {
+            userId: ctx.session.user.id,
+          } as CheckoutMetaData,
+          payment_intent_data: {
+            application_fee_amount: platformFeeAmount,
+          },
         },
-        metadata: {
-          userId: ctx.session.user.id,
-        } as CheckoutMetaData,
-        payment_intent_data: {
-          application_fee_amount: platformFeeAmount,
-        },
-      },{
-        stripeAccount: tenant.stripeAccountId,
-      });
+        {
+          stripeAccount: tenant.stripeAccountId,
+        }
+      );
 
       if (!checkout.url) {
         throw new TRPCError({
@@ -179,9 +187,16 @@ export const checkoutRouter = createTRPCRouter({
         collection: "products",
         depth: 2, // Populate "category", "image", "tenant" & "tenant.image"
         where: {
-          id: {
-            in: input.ids,
-          },
+          and: [
+            {
+              id: {
+                in: input.ids,
+              },
+              isArchived: {
+                not_equals: true,
+              },
+            },
+          ],
         },
       });
 
